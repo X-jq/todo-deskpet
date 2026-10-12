@@ -1,11 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   AlertTriangle,
-  Bell,
   CalendarDays,
   Check,
   CheckCheck,
-  ChevronRight,
   Coffee,
   FileText,
   ListChecks,
@@ -29,8 +27,11 @@ type Task = {
 type Habit = {
   id: number;
   title: string;
-  time: string;
+  time?: string;
   checked: boolean;
+  startDate: string;
+  days: number;
+  lastCheckDate?: string;
 };
 
 const petImages = [
@@ -56,9 +57,9 @@ const initialTasks: Task[] = [
 ];
 
 const initialHabits: Habit[] = [
-  { id: 1, title: '早起打卡', time: '08:00', checked: true },
-  { id: 2, title: '午间拉伸', time: '12:30', checked: false },
-  { id: 3, title: '阅读 30 分钟', time: '21:00', checked: false },
+  { id: 1, title: '早起打卡', time: '08:00', checked: true, startDate: new Date().toISOString(), days: 1, lastCheckDate: new Date().toISOString().slice(0, 10) },
+  { id: 2, title: '午间拉伸', time: '12:30', checked: false, startDate: new Date().toISOString(), days: 0 },
+  { id: 3, title: '阅读 30 分钟', time: '21:00', checked: false, startDate: new Date().toISOString(), days: 0 },
 ];
 
 function loadStored<T>(key: string, fallback: T): T {
@@ -70,24 +71,58 @@ function loadStored<T>(key: string, fallback: T): T {
   }
 }
 
+function normalizeHabits(raw: Habit[]): Habit[] {
+  const todayStr = new Date().toISOString().slice(0, 10);
+  return raw.map((h) => {
+    const startDate = h.startDate ?? new Date().toISOString();
+    const days = typeof h.days === 'number' ? h.days : (h.checked ? 1 : 0);
+    const checked = h.checked && h.lastCheckDate === todayStr;
+    return {
+      ...h,
+      startDate,
+      days,
+      checked,
+      lastCheckDate: checked ? todayStr : h.lastCheckDate,
+    };
+  });
+}
+
 function App() {
   const [tasks, setTasks] = useState<Task[]>(() => loadStored('desk-pet-tasks', initialTasks));
-  const [habits, setHabits] = useState<Habit[]>(() => loadStored('desk-pet-habits', initialHabits));
+  const [habits, setHabits] = useState<Habit[]>(() => normalizeHabits(loadStored('desk-pet-habits', initialHabits)));
   const [activeTab, setActiveTab] = useState<'tasks' | 'done' | 'habits'>('tasks');
   const [newTask, setNewTask] = useState('');
   const [petIndex, setPetIndex] = useState(0);
   const [petMood, setPetMood] = useState(petMoods[0]);
   const [showBubble, setShowBubble] = useState(false);
   const [isWidgetOpen, setIsWidgetOpen] = useState(true);
-  const [showAddHabit, setShowAddHabit] = useState(false);
   const [newHabit, setNewHabit] = useState('');
-  const [newHabitTime, setNewHabitTime] = useState('09:00');
   const [editingDeadlineId, setEditingDeadlineId] = useState<number | null>(null);
   const [deadlineDraft, setDeadlineDraft] = useState('');
   const [, setTick] = useState(0);
 
+  const today = useMemo(() => {
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return {
+      date: `${now.getMonth() + 1}月${now.getDate()}日`,
+      dateStr: `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`,
+      weekday: new Intl.DateTimeFormat('zh-CN', { weekday: 'long' }).format(now),
+      time: now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
+    };
+  }, []);
+
   useEffect(() => localStorage.setItem('desk-pet-tasks', JSON.stringify(tasks)), [tasks]);
   useEffect(() => localStorage.setItem('desk-pet-habits', JSON.stringify(habits)), [habits]);
+
+  useEffect(() => {
+    setHabits((cur) => cur.map((h) => {
+      if (h.checked && h.lastCheckDate !== today.dateStr) {
+        return { ...h, checked: false };
+      }
+      return h;
+    }));
+  }, [today.dateStr]);
 
   useEffect(() => {
     const hasDeadline = tasks.some((t) => !t.done && t.deadline);
@@ -98,15 +133,6 @@ function App() {
 
   const completed = tasks.filter((t) => t.done).length;
   const progress = tasks.length ? Math.round((completed / tasks.length) * 100) : 0;
-
-  const today = useMemo(() => {
-    const now = new Date();
-    return {
-      date: `${now.getMonth() + 1}月${now.getDate()}日`,
-      weekday: new Intl.DateTimeFormat('zh-CN', { weekday: 'long' }).format(now),
-      time: now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }),
-    };
-  }, []);
 
   const cyclePet = () => {
     const next = (petIndex + 1) % petImages.length;
@@ -180,14 +206,26 @@ function App() {
   const formatDeadline = (iso: string) =>
     new Date(iso).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
 
-  const addHabit = () => {
-    if (!newHabit.trim()) return;
-    setHabits((cur) => [...cur, { id: Date.now(), title: newHabit.trim(), time: newHabitTime, checked: false }]);
-    setNewHabit('');
-    setShowAddHabit(false);
+  const formatStartDate = (iso: string) => {
+    const d = new Date(iso);
+    return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
   };
 
-  const toggleHabit = (id: number) => setHabits((cur) => cur.map((h) => h.id === id ? { ...h, checked: !h.checked } : h));
+  const addHabit = () => {
+    if (!newHabit.trim()) return;
+    setHabits((cur) => [...cur, { id: Date.now(), title: newHabit.trim(), checked: false, startDate: new Date().toISOString(), days: 0 }]);
+    setNewHabit('');
+  };
+
+  const toggleHabit = (id: number) => setHabits((cur) => cur.map((h) => {
+    if (h.id !== id) return h;
+    if (!h.checked) {
+      return { ...h, checked: true, days: h.days + 1, lastCheckDate: today.dateStr };
+    }
+    return { ...h, checked: false, days: Math.max(0, h.days - 1), lastCheckDate: undefined };
+  }));
+
+  const deleteHabit = (id: number) => setHabits((cur) => cur.filter((h) => h.id !== id));
 
   if (!isWidgetOpen) {
     return (
@@ -332,21 +370,25 @@ function App() {
                     </button>
                     <div className="habit-info">
                       <strong>{habit.title}</strong>
-                      <span><Bell size={11} /> 每天 {habit.time}</span>
+                      <span className="habit-days">
+                        从{formatStartDate(habit.startDate)}开始，你已经坚持打卡
+                        <em className="habit-days-count">{habit.days}</em>
+                        天啦！
+                      </span>
                     </div>
-                    <ChevronRight size={15} />
+                    <button className="delete-button" aria-label="删除" onClick={() => deleteHabit(habit.id)}><X size={14} /></button>
                   </article>
                 ))}
               </div>
-              {showAddHabit ? (
-                <div className="habit-form">
-                  <input autoFocus value={newHabit} onChange={(e) => setNewHabit(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addHabit()} placeholder="习惯名称" />
-                  <input type="time" value={newHabitTime} onChange={(e) => setNewHabitTime(e.target.value)} />
-                  <button onClick={addHabit}>保存</button>
-                </div>
-              ) : (
-                <button className="add-habit" onClick={() => setShowAddHabit(true)}><Plus size={15} /> 新增打卡习惯</button>
-              )}
+              <div className="add-row">
+                <input
+                  value={newHabit}
+                  onChange={(e) => setNewHabit(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && addHabit()}
+                  placeholder="新增打卡习惯"
+                />
+                <button onClick={addHabit} aria-label="添加"><Plus size={18} /></button>
+              </div>
             </div>
           )}
 

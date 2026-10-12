@@ -603,12 +603,17 @@ input {
 }
 
 .habit-info span {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  display: block;
   margin-top: 4px;
-  font: 10px 'DM Mono', monospace;
+  font-size: 10px;
   color: var(--ink-faint);
+  line-height: 1.4;
+}
+
+.habit-days-count {
+  font-style: normal;
+  font-weight: 700;
+  color: #e07a5f;
 }
 
 .habit-card.is-checked {
