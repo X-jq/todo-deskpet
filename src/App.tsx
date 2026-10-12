@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
+  AlertTriangle,
   Bell,
   CalendarDays,
   Check,
@@ -9,6 +10,7 @@ import {
   FileText,
   ListChecks,
   Minus,
+  MoreHorizontal,
   Plus,
   RotateCcw,
   X,
@@ -20,6 +22,8 @@ type Task = {
   note?: string;
   tag: '待办' | '已完成' | '打卡';
   done: boolean;
+  completedAt?: string;
+  deadline?: string;
 };
 
 type Habit = {
@@ -36,9 +40,13 @@ const petImages = [
 ];
 
 const petMoods = [
-  '慢慢来，今天也会很棒。',
-  '收到！我帮你记下啦。',
-  '别忘了，休息也是任务的一部分。',
+
+  '压力大的话就在地上躺一躺吧，增大受力面积，减小压强。',
+
+  '烂工出烂活，欲速则一坨。',
+  '废学忘习地寝食ing...',
+
+
 ];
 
 const initialTasks: Task[] = [
@@ -74,9 +82,19 @@ function App() {
   const [showAddHabit, setShowAddHabit] = useState(false);
   const [newHabit, setNewHabit] = useState('');
   const [newHabitTime, setNewHabitTime] = useState('09:00');
+  const [editingDeadlineId, setEditingDeadlineId] = useState<number | null>(null);
+  const [deadlineDraft, setDeadlineDraft] = useState('');
+  const [, setTick] = useState(0);
 
   useEffect(() => localStorage.setItem('desk-pet-tasks', JSON.stringify(tasks)), [tasks]);
   useEffect(() => localStorage.setItem('desk-pet-habits', JSON.stringify(habits)), [habits]);
+
+  useEffect(() => {
+    const hasDeadline = tasks.some((t) => !t.done && t.deadline);
+    if (!hasDeadline) return;
+    const timer = setInterval(() => setTick((n) => n + 1), 30 * 1000);
+    return () => clearInterval(timer);
+  }, [tasks]);
 
   const completed = tasks.filter((t) => t.done).length;
   const progress = tasks.length ? Math.round((completed / tasks.length) * 100) : 0;
@@ -110,13 +128,57 @@ function App() {
   };
 
   const toggleTask = (id: number) => {
-    setTasks((cur) => cur.map((t) => t.id === id ? { ...t, done: !t.done, tag: t.done ? '待办' : '已完成' } : t));
+    setTasks((cur) => cur.map((t) => {
+      if (t.id !== id) return t;
+      const nowDone = !t.done;
+      return {
+        ...t,
+        done: nowDone,
+        tag: nowDone ? '已完成' : '待办',
+        completedAt: nowDone ? new Date().toISOString() : undefined,
+      };
+    }));
     setPetMood('做得漂亮！又完成一件小事。');
     setShowBubble(true);
     setTimeout(() => setShowBubble(false), 2800);
   };
 
   const deleteTask = (id: number) => setTasks((cur) => cur.filter((t) => t.id !== id));
+
+  const openDeadlineEditor = (task: Task) => {
+    setEditingDeadlineId(task.id);
+    if (task.deadline) {
+      const d = new Date(task.deadline);
+      const pad = (n: number) => String(n).padStart(2, '0');
+      setDeadlineDraft(`${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`);
+    } else {
+      setDeadlineDraft('');
+    }
+  };
+
+  const saveDeadline = (id: number) => {
+    if (!deadlineDraft) return;
+    setTasks((cur) => cur.map((t) => t.id === id ? { ...t, deadline: new Date(deadlineDraft).toISOString() } : t));
+    setEditingDeadlineId(null);
+    setDeadlineDraft('');
+  };
+
+  const clearDeadline = (id: number) => {
+    setTasks((cur) => cur.map((t) => t.id === id ? { ...t, deadline: undefined } : t));
+    setEditingDeadlineId(null);
+    setDeadlineDraft('');
+  };
+
+  const getDeadlineStatus = (task: Task): 'none' | 'near' | 'overdue' => {
+    if (!task.deadline || task.done) return 'none';
+    const diff = new Date(task.deadline).getTime() - Date.now();
+    if (diff <= 0) return 'overdue';
+    if (diff <= 2 * 60 * 60 * 1000) return 'near';
+    return 'none';
+  };
+
+  const formatDeadline = (iso: string) =>
+    new Date(iso).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
 
   const addHabit = () => {
     if (!newHabit.trim()) return;
@@ -187,13 +249,44 @@ function App() {
                 {tasks.filter((t) => !t.done).length === 0 && (
                   <div className="empty-state"><Coffee size={20} /><span>太棒了，待办全部完成啦！</span></div>
                 )}
-                {tasks.filter((t) => !t.done).map((task) => (
-                  <article className="task-card" key={task.id}>
-                    <button className="check-circle" aria-label="完成" onClick={() => toggleTask(task.id)} />
-                    <span className="task-title">{task.title}</span>
-                    <button className="delete-button" aria-label="删除" onClick={() => deleteTask(task.id)}><X size={14} /></button>
-                  </article>
-                ))}
+                {tasks.filter((t) => !t.done).map((task) => {
+                  const status = getDeadlineStatus(task);
+                  const cardClass = status === 'overdue' ? 'task-card overdue' : status === 'near' ? 'task-card near-deadline' : 'task-card';
+                  return (
+                    <article className={cardClass} key={task.id}>
+                      <button className="check-circle" aria-label="完成" onClick={() => toggleTask(task.id)} />
+                      <div className="task-info">
+                        <span className="task-title">{task.title}</span>
+                        {task.deadline && (
+                          <span className={status === 'overdue' ? 'task-deadline overdue' : status === 'near' ? 'task-deadline warning' : 'task-deadline'}>
+                            <AlertTriangle size={11} />
+                            {status === 'overdue' ? `已超时 ${formatDeadline(task.deadline)}` : `截止 ${formatDeadline(task.deadline)}`}
+                          </span>
+                        )}
+                        {editingDeadlineId === task.id && (
+                          <div className="deadline-editor">
+                            <input
+                              type="datetime-local"
+                              value={deadlineDraft}
+                              onChange={(e) => setDeadlineDraft(e.target.value)}
+                            />
+                            <div className="deadline-actions">
+                              <button onClick={() => saveDeadline(task.id)} disabled={!deadlineDraft}>保存</button>
+                              <button onClick={() => clearDeadline(task.id)} className="danger">清除</button>
+                              <button onClick={() => { setEditingDeadlineId(null); setDeadlineDraft(''); }}>取消</button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div className="task-actions">
+                        <button className="action-button" aria-label="设置提醒" onClick={() => openDeadlineEditor(task)}>
+                          <MoreHorizontal size={14} />
+                        </button>
+                        <button className="delete-button" aria-label="删除" onClick={() => deleteTask(task.id)}><X size={14} /></button>
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
               <div className="add-row">
                 <input
@@ -216,7 +309,14 @@ function App() {
                     <button className="check-circle" aria-label="撤销完成" onClick={() => toggleTask(task.id)}>
                       <Check size={13} />
                     </button>
-                    <span className="task-title">{task.title}</span>
+                    <div className="task-info">
+                      <span className="task-title">{task.title}</span>
+                      {task.completedAt && (
+                        <span className="task-time">
+                          完成于 {new Date(task.completedAt).toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      )}
+                    </div>
                     <button className="delete-button" aria-label="删除" onClick={() => deleteTask(task.id)}><X size={14} /></button>
                   </article>
                 ))}
@@ -251,7 +351,7 @@ function App() {
           )}
 
           <footer className="widget-footer">
-            <span><FileText size={13} /> 数据已自动保存</span>
+            <span><FileText size={13} /> 今日事今日毕</span>
             <button onClick={() => { setPetMood('别忘了，休息也是任务的一部分。'); setShowBubble(true); setTimeout(() => setShowBubble(false), 2800); }}>
               <RotateCcw size={13} /> 换个心情
             </button>
