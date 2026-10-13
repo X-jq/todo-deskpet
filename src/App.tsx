@@ -94,12 +94,12 @@ function App() {
   const [newTask, setNewTask] = useState('');
   const [petIndex, setPetIndex] = useState(0);
   const [petMood, setPetMood] = useState(petMoods[0]);
-  const [showBubble, setShowBubble] = useState(false);
+  const [showBubble, setShowBubble] = useState(true);
   const [isWidgetOpen, setIsWidgetOpen] = useState(true);
   const [newHabit, setNewHabit] = useState('');
   const [editingDeadlineId, setEditingDeadlineId] = useState<number | null>(null);
   const [deadlineDraft, setDeadlineDraft] = useState('');
-  const [, setTick] = useState(0);
+  const [tick, setTick] = useState(0);
 
   const today = useMemo(() => {
     const now = new Date();
@@ -140,7 +140,6 @@ function App() {
     setPetIndex(next);
     setPetMood(mood);
     setShowBubble(true);
-    setTimeout(() => setShowBubble(false), 2800);
   };
 
   const addTask = () => {
@@ -150,7 +149,6 @@ function App() {
     setNewTask('');
     setPetMood('收到！我帮你记下啦。');
     setShowBubble(true);
-    setTimeout(() => setShowBubble(false), 2800);
   };
 
   const toggleTask = (id: number) => {
@@ -166,7 +164,6 @@ function App() {
     }));
     setPetMood('做得漂亮！又完成一件小事。');
     setShowBubble(true);
-    setTimeout(() => setShowBubble(false), 2800);
   };
 
   const deleteTask = (id: number) => setTasks((cur) => cur.filter((t) => t.id !== id));
@@ -211,9 +208,23 @@ function App() {
     return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
   };
 
+  const sortedPendingTasks = useMemo(() => {
+    const priority: Record<'none' | 'near' | 'overdue', number> = { overdue: 0, near: 1, none: 2 };
+    return tasks
+      .map((task, index) => ({ task, index }))
+      .filter(({ task }) => !task.done)
+      .sort((a, b) => {
+        const pa = priority[getDeadlineStatus(a.task)];
+        const pb = priority[getDeadlineStatus(b.task)];
+        if (pa !== pb) return pa - pb;
+        return a.index - b.index;
+      })
+      .map(({ task }) => task);
+  }, [tasks, tick]);
+
   const addHabit = () => {
     if (!newHabit.trim()) return;
-    setHabits((cur) => [...cur, { id: Date.now(), title: newHabit.trim(), checked: false, startDate: new Date().toISOString(), days: 0 }]);
+    setHabits((cur) => [{ id: Date.now(), title: newHabit.trim(), checked: false, startDate: new Date().toISOString(), days: 0 }, ...cur]);
     setNewHabit('');
   };
 
@@ -284,10 +295,10 @@ function App() {
           {activeTab === 'tasks' ? (
             <div className="content-area">
               <div className="task-list">
-                {tasks.filter((t) => !t.done).length === 0 && (
+                {sortedPendingTasks.length === 0 && (
                   <div className="empty-state"><Coffee size={20} /><span>太棒了，待办全部完成啦！</span></div>
                 )}
-                {tasks.filter((t) => !t.done).map((task) => {
+                {sortedPendingTasks.map((task) => {
                   const status = getDeadlineStatus(task);
                   const cardClass = status === 'overdue' ? 'task-card overdue' : status === 'near' ? 'task-card near-deadline' : 'task-card';
                   return (
@@ -394,7 +405,7 @@ function App() {
 
           <footer className="widget-footer">
             <span><FileText size={13} /> 今日事今日毕</span>
-            <button onClick={() => { setPetMood('别忘了，休息也是任务的一部分。'); setShowBubble(true); setTimeout(() => setShowBubble(false), 2800); }}>
+            <button onClick={() => { setPetMood('别忘了，休息也是任务的一部分。'); setShowBubble(true); }}>
               <RotateCcw size={13} /> 换个心情
             </button>
           </footer>
