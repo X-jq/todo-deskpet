@@ -36,9 +36,9 @@ type Habit = {
 };
 
 const petImages = [
-  '/images/image copy 2.png',
-  '/images/image copy 3.png',
-  '/images/image copy 4.png',
+  './images/image copy 2.png',
+  './images/image copy 3.png',
+  './images/image copy 4.png',
 ];
 
 const petMoods = [
