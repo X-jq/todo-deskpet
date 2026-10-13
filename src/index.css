@@ -61,6 +61,8 @@ button,
 input {
   font: inherit;
   cursor: pointer;
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
 }
 
 /* 清单以外保持透明：在支持透明窗口的桌面容器中会透出电脑桌面 */
@@ -69,7 +71,7 @@ input {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 68px 18px 39px;
+  padding: 5px 18px 5px;
   background: transparent;
 }
 
@@ -98,8 +100,6 @@ input {
   border: 0;
   background: transparent;
   animation: float 4s ease-in-out infinite;
-  -webkit-app-region: drag;
-  app-region: drag;
 }
 
 .pet-anchor:active {
@@ -159,7 +159,9 @@ input {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  height: 390px;
+  height: 420px;
+  -webkit-app-region: drag;
+  app-region: drag;
 }
 
 /* 顶部彩条：绿→蓝→粉，像参考图的心形颜色序列 */
@@ -319,6 +321,8 @@ input {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
 }
 
 .task-list,
@@ -818,7 +822,7 @@ input {
 /* ── 响应式 ── */
 @media (max-width: 360px) {
   .app-shell {
-    padding: 66px 9px 30px;
+    padding: 5px 9px 5px;
   }
 
   .speech-bubble {

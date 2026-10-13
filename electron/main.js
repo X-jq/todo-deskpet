@@ -19,9 +19,9 @@ function createWindow() {
 
   mainWindow = new BrowserWindow({
     width: 315,
-    height: 420,
+    height: 500,
     x: width - 335,
-    y: height - 440,
+    y: height - 520,
     frame: false,
     transparent: true,
     alwaysOnTop: true,
@@ -93,4 +93,20 @@ ipcMain.on('window:minimize', () => {
 
 ipcMain.on('window:close', () => {
   if (mainWindow) mainWindow.close();
+});
+
+let dragOffset = { x: 0, y: 0 };
+
+ipcMain.on('window:drag-start', (_event, screenX, screenY) => {
+  if (!mainWindow) return;
+  const [wx, wy] = mainWindow.getPosition();
+  dragOffset = { x: screenX - wx, y: screenY - wy };
+});
+
+ipcMain.on('window:drag-move', (_event, screenX, screenY) => {
+  if (!mainWindow) return;
+  mainWindow.setPosition(
+    Math.round(screenX - dragOffset.x),
+    Math.round(screenY - dragOffset.y),
+  );
 });

@@ -9,6 +9,8 @@ interface ElectronStoreAPI {
 interface ElectronWindowAPI {
   minimize: () => void;
   close: () => void;
+  dragStart: (x: number, y: number) => void;
+  dragMove: (x: number, y: number) => void;
 }
 
 interface Window {

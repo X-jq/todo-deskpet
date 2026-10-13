@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertTriangle,
   CalendarDays,
@@ -92,6 +92,29 @@ function App() {
   const [editingDeadlineId, setEditingDeadlineId] = useState<number | null>(null);
   const [deadlineDraft, setDeadlineDraft] = useState('');
   const [tick, setTick] = useState(0);
+
+  const petMovedRef = useRef(false);
+
+  const startPetDrag = (e: React.MouseEvent) => {
+    if (!window.electronAPI) return;
+    petMovedRef.current = false;
+    const startX = e.screenX;
+    const startY = e.screenY;
+    window.electronAPI.window.dragStart(startX, startY);
+
+    const onMove = (ev: MouseEvent) => {
+      if (Math.abs(ev.screenX - startX) > 2 || Math.abs(ev.screenY - startY) > 2) {
+        petMovedRef.current = true;
+      }
+      window.electronAPI?.window.dragMove(ev.screenX, ev.screenY);
+    };
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  };
 
   const today = useMemo(() => {
     const now = new Date();
@@ -249,7 +272,12 @@ function App() {
   if (!isWidgetOpen) {
     return (
       <main className="app-shell">
-        <button className="collapsed-pet" onClick={() => setIsWidgetOpen(true)} aria-label="恢复面板">
+        <button
+          className="collapsed-pet"
+          onMouseDown={startPetDrag}
+          onClick={() => { if (!petMovedRef.current) setIsWidgetOpen(true); }}
+          aria-label="恢复面板"
+        >
           <img src={petImages[petIndex]} alt="点击打开桌宠" />
         </button>
       </main>
@@ -260,7 +288,12 @@ function App() {
     <main className="app-shell">
       <div className="widget-wrapper">
         {/* 桌宠悬浮在卡片左上角 */}
-        <button className="pet-anchor" onClick={cyclePet} aria-label="切换桌宠形象">
+        <button
+          className="pet-anchor"
+          onMouseDown={startPetDrag}
+          onClick={() => { if (!petMovedRef.current) cyclePet(); }}
+          aria-label="切换桌宠形象"
+        >
           <img src={petImages[petIndex]} alt="可爱的桌宠" className="pet-img" />
           {showBubble && (
             <div className="speech-bubble">
