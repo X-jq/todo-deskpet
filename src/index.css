@@ -51,8 +51,10 @@ html,
 body,
 #root {
   margin: 0;
-  min-width: 320px;
+  min-width: 240px;
   background: transparent;
+  overflow: hidden;
+  height: 100%;
 }
 
 button,
@@ -67,7 +69,7 @@ input {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 90px 24px 52px;
+  padding: 68px 18px 39px;
   background: transparent;
 }
 
@@ -79,8 +81,8 @@ input {
 /* ── 包裹层 ── */
 .widget-wrapper {
   position: relative;
-  width: min(100%, 372px);
-  padding-top: 92px;
+  width: min(100%, 279px);
+  padding-top: 69px;
   animation: appear .5s ease both;
 }
 
@@ -88,14 +90,16 @@ input {
 .pet-anchor {
   position: absolute;
   top: 0;
-  left: -16px;
+  left: -12px;
   z-index: 10;
-  width: 148px;
-  height: 136px;
+  width: 111px;
+  height: 102px;
   padding: 0;
   border: 0;
   background: transparent;
   animation: float 4s ease-in-out infinite;
+  -webkit-app-region: drag;
+  app-region: drag;
 }
 
 .pet-anchor:active {
@@ -106,7 +110,7 @@ input {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 8px 10px rgba(60, 80, 20, .20));
+  filter: drop-shadow(0 6px 8px rgba(60, 80, 20, .20));
   transition: transform .22s;
 }
 
@@ -117,27 +121,27 @@ input {
 /* ── 气泡（用天蓝描边，像角色的蓝色配件） ── */
 .speech-bubble {
   position: absolute;
-  top: 12px;
-  left: 142px;
-  width: 160px;
-  padding: 9px 12px 9px 17px;
+  top: 9px;
+  left: 106px;
+  width: 120px;
+  padding: 7px 9px 7px 13px;
   border: 1.5px solid var(--sky-light);
-  border-radius: 6px 18px 18px 18px;
+  border-radius: 5px 14px 14px 14px;
   background: var(--paper);
   color: var(--ink-mid);
-  font-size: 11px;
+  font-size: 9px;
   line-height: 1.6;
-  box-shadow: 0 6px 18px rgba(80, 160, 190, .15);
+  box-shadow: 0 4px 14px rgba(80, 160, 190, .15);
   animation: bubblePop .2s ease both;
   white-space: pre-wrap;
 }
 
 .bubble-dot {
   position: absolute;
-  left: 8px;
-  top: 10px;
-  width: 5px;
-  height: 5px;
+  left: 6px;
+  top: 8px;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
   background: var(--sky);
 }
@@ -147,22 +151,22 @@ input {
   position: relative;
   background: var(--cream);
   border: 2px solid rgba(185, 210, 100, .55);
-  border-radius: 22px;
+  border-radius: 17px;
   box-shadow:
-    0 18px 48px rgba(80, 100, 20, .13),
-    0 3px 8px rgba(80, 100, 20, .07),
+    0 14px 36px rgba(80, 100, 20, .13),
+    0 2px 6px rgba(80, 100, 20, .07),
     inset 0 1px 0 rgba(255, 255, 255, .85);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  height: 520px;
+  height: 390px;
 }
 
 /* 顶部彩条：绿→蓝→粉，像参考图的心形颜色序列 */
 .widget::before {
   content: '';
   display: block;
-  height: 4px;
+  height: 3px;
   background: linear-gradient(90deg,
       var(--sage) 0%,
       var(--sky) 40%,
@@ -175,17 +179,21 @@ input {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 13px 18px 8px;
+  padding: 10px 14px 6px;
+  -webkit-app-region: drag;
+  app-region: drag;
 }
 
 .window-dots {
   display: flex;
-  gap: 7px;
+  gap: 5px;
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
 }
 
 .dot {
-  width: 22px;
-  height: 22px;
+  width: 17px;
+  height: 17px;
   padding: 0;
   display: grid;
   place-items: center;
@@ -214,7 +222,7 @@ input {
 
 .topbar-time {
   display: block;
-  font: 700 30px 'DM Mono', monospace;
+  font: 700 23px 'DM Mono', monospace;
   color: var(--ink);
   letter-spacing: -.04em;
   line-height: 1;
@@ -222,16 +230,16 @@ input {
 
 .topbar-date {
   display: block;
-  margin-top: 4px;
-  font-size: 11px;
+  margin-top: 3px;
+  font-size: 9px;
   color: var(--ink-soft);
 }
 
 /* ── 进度（天蓝色系） ── */
 .progress-panel {
-  margin: 6px 18px 12px;
-  padding: 11px 14px;
-  border-radius: 14px;
+  margin: 5px 14px 9px;
+  padding: 8px 11px;
+  border-radius: 11px;
   background: var(--sky-pale);
   border: 1px solid rgba(126, 200, 224, .3);
 }
@@ -240,23 +248,23 @@ input {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .progress-copy span {
-  font-size: 11px;
+  font-size: 9px;
   font-weight: 700;
   color: var(--sky-mid);
 }
 
 .progress-copy strong {
-  font: 500 13px 'DM Mono', monospace;
+  font: 500 10px 'DM Mono', monospace;
   color: var(--sky-mid);
 }
 
 .progress-track {
-  height: 5px;
-  border-radius: 8px;
+  height: 4px;
+  border-radius: 6px;
   background: rgba(126, 200, 224, .25);
   overflow: hidden;
 }
@@ -272,11 +280,11 @@ input {
 /* ── 标签页 ── */
 .tabs {
   display: flex;
-  margin: 0 18px 12px;
-  border-radius: 14px;
+  margin: 0 14px 9px;
+  border-radius: 11px;
   background: rgba(255, 255, 220, .7);
-  padding: 4px;
-  gap: 4px;
+  padding: 3px;
+  gap: 3px;
   border: 1px solid rgba(185, 210, 100, .3);
 }
 
@@ -285,13 +293,13 @@ input {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  height: 34px;
+  gap: 3px;
+  height: 26px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 8px;
   background: transparent;
   color: var(--ink-faint);
-  font-size: 11px;
+  font-size: 9px;
   font-weight: 700;
   white-space: nowrap;
   transition: .18s;
@@ -300,12 +308,12 @@ input {
 .tab.active {
   background: var(--paper);
   color: var(--sky-mid);
-  box-shadow: 0 2px 8px rgba(80, 160, 190, .15);
+  box-shadow: 0 2px 6px rgba(80, 160, 190, .15);
 }
 
 /* ── 内容区 ── */
 .content-area {
-  padding: 0 18px;
+  padding: 0 14px;
   flex: 1;
   min-height: 0;
   display: flex;
@@ -316,12 +324,12 @@ input {
 .task-list,
 .habit-list {
   display: grid;
-  gap: 8px;
+  gap: 6px;
   align-content: start;
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding-right: 3px;
+  padding-right: 2px;
 }
 
 .add-row {
@@ -336,25 +344,25 @@ input {
 .task-list::-webkit-scrollbar-thumb,
 .habit-list::-webkit-scrollbar-thumb {
   background: var(--sky-light);
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 /* ── 任务条 ── */
 .task-card {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 10px 10px 12px;
-  border-radius: 13px;
+  gap: 8px;
+  padding: 8px 8px 8px 9px;
+  border-radius: 10px;
   background: var(--paper);
   border: 1px solid rgba(185, 210, 100, .28);
-  box-shadow: 0 2px 6px rgba(80, 100, 20, .05);
+  box-shadow: 0 2px 5px rgba(80, 100, 20, .05);
   transition: transform .15s, box-shadow .15s;
 }
 
 .task-card:hover {
   transform: translateX(2px);
-  box-shadow: 0 5px 14px rgba(80, 100, 20, .09);
+  box-shadow: 0 4px 11px rgba(80, 100, 20, .09);
 }
 
 .task-card.is-done {
@@ -363,8 +371,8 @@ input {
 
 .check-circle {
   flex: 0 0 auto;
-  width: 20px;
-  height: 20px;
+  width: 15px;
+  height: 15px;
   padding: 0;
   display: grid;
   place-items: center;
@@ -381,7 +389,7 @@ input {
 }
 
 .task-title {
-  font-size: 12px;
+  font-size: 9px;
   font-weight: 500;
   color: var(--ink-mid);
 }
@@ -400,7 +408,7 @@ input {
 }
 
 .task-time {
-  font-size: 10px;
+  font-size: 8px;
   color: var(--ink-soft);
   font-family: 'DM Mono', monospace;
 }
@@ -408,8 +416,8 @@ input {
 .task-deadline {
   display: flex;
   align-items: center;
-  gap: 3px;
-  font-size: 10px;
+  gap: 2px;
+  font-size: 8px;
   color: var(--ink-soft);
   font-family: 'DM Mono', monospace;
 }
@@ -439,13 +447,13 @@ input {
 
 .task-card.near-deadline {
   border-color: rgba(224, 122, 95, .7);
-  box-shadow: 0 0 0 1.5px rgba(224, 122, 95, .35), 0 3px 10px rgba(224, 122, 95, .2);
+  box-shadow: 0 0 0 1.5px rgba(224, 122, 95, .35), 0 2px 8px rgba(224, 122, 95, .2);
 }
 
 .task-card.overdue {
   border-color: rgba(192, 57, 43, .8);
   background: #fdf0ed;
-  box-shadow: 0 0 0 2px rgba(192, 57, 43, .3), 0 4px 12px rgba(192, 57, 43, .22);
+  box-shadow: 0 0 0 2px rgba(192, 57, 43, .3), 0 3px 9px rgba(192, 57, 43, .22);
 }
 
 .task-actions {
@@ -456,11 +464,11 @@ input {
 }
 
 .action-button {
-  padding: 4px;
+  padding: 3px;
   border: 0;
   background: transparent;
   color: var(--ink-faint);
-  border-radius: 6px;
+  border-radius: 5px;
   transition: .15s;
   display: grid;
   place-items: center;
@@ -474,20 +482,20 @@ input {
 .deadline-editor {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-top: 6px;
-  padding-top: 6px;
+  gap: 5px;
+  margin-top: 5px;
+  padding-top: 5px;
   border-top: 1px dashed rgba(185, 210, 100, .3);
 }
 
 .deadline-editor input[type="datetime-local"] {
   width: 100%;
-  padding: 5px 7px;
+  padding: 4px 5px;
   border: 1px solid var(--sky-light);
-  border-radius: 7px;
+  border-radius: 5px;
   background: var(--sky-pale);
   color: var(--ink-mid);
-  font-size: 11px;
+  font-size: 8px;
   font-family: 'DM Mono', monospace;
   outline: none;
 }
@@ -498,17 +506,17 @@ input {
 
 .deadline-actions {
   display: flex;
-  gap: 6px;
+  gap: 5px;
 }
 
 .deadline-actions button {
   flex: 1;
-  padding: 4px 6px;
+  padding: 3px 5px;
   border: 0;
-  border-radius: 7px;
+  border-radius: 5px;
   background: var(--sky);
   color: #fff;
-  font-size: 10px;
+  font-size: 8px;
   transition: .15s;
 }
 
@@ -540,7 +548,7 @@ input {
 }
 
 .delete-button {
-  padding: 4px;
+  padding: 3px;
   border: 0;
   background: transparent;
   color: var(--ink-faint);
@@ -554,12 +562,12 @@ input {
 /* ── 新增任务行 ── */
 .add-row {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
-  margin: 10px 0 12px;
-  padding: 6px 6px 6px 14px;
+  margin: 8px 0 9px;
+  padding: 5px 5px 5px 11px;
   border: 1.5px dashed rgba(126, 200, 224, .55);
-  border-radius: 13px;
+  border-radius: 10px;
   background: var(--sky-pale);
 }
 
@@ -569,7 +577,7 @@ input {
   outline: 0;
   background: transparent;
   color: var(--ink-mid);
-  font-size: 12px;
+  font-size: 9px;
 }
 
 .add-row input::placeholder {
@@ -577,12 +585,12 @@ input {
 }
 
 .add-row button {
-  width: 30px;
-  height: 30px;
+  width: 23px;
+  height: 23px;
   display: grid;
   place-items: center;
   border: 0;
-  border-radius: 9px;
+  border-radius: 7px;
   background: var(--sky);
   color: #fff;
   transition: .15s;
@@ -597,9 +605,9 @@ input {
 .habit-card {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 11px 12px;
-  border-radius: 13px;
+  gap: 8px;
+  padding: 8px 9px;
+  border-radius: 10px;
   background: var(--paper);
   border: 1px solid rgba(185, 210, 100, .28);
   color: var(--ink-soft);
@@ -612,14 +620,14 @@ input {
 
 .habit-info strong {
   display: block;
-  font-size: 12px;
+  font-size: 9px;
   color: var(--ink-mid);
 }
 
 .habit-info span {
   display: block;
-  margin-top: 4px;
-  font-size: 10px;
+  margin-top: 3px;
+  font-size: 8px;
   color: var(--ink-faint);
   line-height: 1.4;
 }
@@ -641,8 +649,8 @@ input {
 
 .habit-check {
   flex: 0 0 auto;
-  width: 20px;
-  height: 20px;
+  width: 15px;
+  height: 15px;
   display: grid;
   place-items: center;
   border: 1.5px solid var(--ink-faint);
@@ -662,15 +670,15 @@ input {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 4px;
   width: 100%;
-  margin: 10px 0 12px;
-  padding: 10px;
+  margin: 8px 0 9px;
+  padding: 8px;
   border: 1.5px dashed rgba(126, 200, 224, .5);
-  border-radius: 13px;
+  border-radius: 10px;
   background: var(--sky-pale);
   color: var(--sky-mid);
-  font-size: 12px;
+  font-size: 9px;
   transition: .15s;
 }
 
@@ -682,28 +690,28 @@ input {
 .habit-form {
   display: grid;
   grid-template-columns: 1fr auto auto;
-  gap: 7px;
-  margin: 10px 0 12px;
+  gap: 5px;
+  margin: 8px 0 9px;
 }
 
 .habit-form input {
   min-width: 0;
-  padding: 8px 9px;
+  padding: 6px 7px;
   border: 1.5px solid var(--sky-light);
-  border-radius: 9px;
+  border-radius: 7px;
   outline: 0;
   color: var(--ink-mid);
   background: var(--sky-pale);
-  font-size: 11px;
+  font-size: 8px;
 }
 
 .habit-form button {
-  padding: 0 12px;
+  padding: 0 9px;
   border: 0;
-  border-radius: 9px;
+  border-radius: 7px;
   background: var(--sky);
   color: #fff;
-  font-size: 11px;
+  font-size: 8px;
 }
 
 /* ── 底栏 ── */
@@ -711,24 +719,24 @@ input {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 18px 14px;
+  padding: 8px 14px 11px;
   border-top: 1px solid rgba(185, 210, 100, .28);
   color: var(--ink-faint);
-  font-size: 10px;
+  font-size: 8px;
 }
 
 .widget-footer span,
 .widget-footer button {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
 }
 
 .widget-footer button {
   border: 0;
   background: transparent;
   color: var(--lavender);
-  font-size: 10px;
+  font-size: 8px;
   transition: .15s;
 }
 
@@ -740,8 +748,8 @@ input {
 .collapsed-pet {
   position: relative;
   display: block;
-  width: 128px;
-  height: 128px;
+  width: 96px;
+  height: 96px;
   padding: 0;
   border: 0;
   background: transparent;
@@ -752,7 +760,7 @@ input {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 8px 10px rgba(60, 80, 20, .2));
+  filter: drop-shadow(0 6px 8px rgba(60, 80, 20, .2));
   transition: transform .2s;
 }
 
@@ -764,17 +772,17 @@ input {
 .empty-state {
   display: flex;
   align-items: center;
-  gap: 9px;
-  padding: 24px 0;
+  gap: 7px;
+  padding: 18px 0;
   color: var(--ink-faint);
-  font-size: 11px;
+  font-size: 9px;
 }
 
 /* ── 动画 ── */
 @keyframes appear {
   from {
     opacity: 0;
-    transform: translateY(18px);
+    transform: translateY(14px);
   }
 
   to {
@@ -791,14 +799,14 @@ input {
   }
 
   50% {
-    transform: translateY(-9px);
+    transform: translateY(-7px);
   }
 }
 
 @keyframes bubblePop {
   from {
     opacity: 0;
-    transform: scale(.88) translateY(-5px);
+    transform: scale(.88) translateY(-4px);
   }
 
   to {
@@ -808,14 +816,14 @@ input {
 }
 
 /* ── 响应式 ── */
-@media (max-width: 480px) {
+@media (max-width: 360px) {
   .app-shell {
-    padding: 88px 12px 40px;
+    padding: 66px 9px 30px;
   }
 
   .speech-bubble {
-    width: 140px;
-    left: 124px;
-    font-size: 10px;
+    width: 105px;
+    left: 93px;
+    font-size: 8px;
   }
 }

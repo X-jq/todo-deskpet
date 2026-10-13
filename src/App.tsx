@@ -13,6 +13,7 @@ import {
   RotateCcw,
   X,
 } from 'lucide-react';
+import { getStored, setStored } from './lib/storage';
 
 type Task = {
   id: number;
@@ -62,15 +63,6 @@ const initialHabits: Habit[] = [
   { id: 3, title: '阅读 30 分钟', time: '21:00', checked: false, startDate: new Date().toISOString(), days: 0 },
 ];
 
-function loadStored<T>(key: string, fallback: T): T {
-  try {
-    const saved = localStorage.getItem(key);
-    return saved ? (JSON.parse(saved) as T) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
 function normalizeHabits(raw: Habit[]): Habit[] {
   const todayStr = new Date().toISOString().slice(0, 10);
   return raw.map((h) => {
@@ -88,8 +80,8 @@ function normalizeHabits(raw: Habit[]): Habit[] {
 }
 
 function App() {
-  const [tasks, setTasks] = useState<Task[]>(() => loadStored('desk-pet-tasks', initialTasks));
-  const [habits, setHabits] = useState<Habit[]>(() => normalizeHabits(loadStored('desk-pet-habits', initialHabits)));
+  const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  const [habits, setHabits] = useState<Habit[]>(normalizeHabits(initialHabits));
   const [activeTab, setActiveTab] = useState<'tasks' | 'done' | 'habits'>('tasks');
   const [newTask, setNewTask] = useState('');
   const [petIndex, setPetIndex] = useState(0);
@@ -112,8 +104,24 @@ function App() {
     };
   }, []);
 
-  useEffect(() => localStorage.setItem('desk-pet-tasks', JSON.stringify(tasks)), [tasks]);
-  useEffect(() => localStorage.setItem('desk-pet-habits', JSON.stringify(habits)), [habits]);
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const [savedTasks, savedHabits] = await Promise.all([
+        getStored<Task[]>('desk-pet-tasks', initialTasks),
+        getStored<Habit[]>('desk-pet-habits', initialHabits),
+      ]);
+      if (!mounted) return;
+      setTasks(savedTasks);
+      setHabits(normalizeHabits(savedHabits));
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => setStored('desk-pet-tasks', tasks), [tasks]);
+  useEffect(() => setStored('desk-pet-habits', habits), [habits]);
 
   useEffect(() => {
     setHabits((cur) => cur.map((h) => {
@@ -266,8 +274,8 @@ function App() {
           {/* 顶栏 */}
           <div className="widget-topbar">
             <div className="window-dots">
-              <button className="dot dot-min" aria-label="最小化" onClick={() => setIsWidgetOpen(false)}><Minus size={11} /></button>
-              <button className="dot dot-close" aria-label="关闭" onClick={() => setIsWidgetOpen(false)}><X size={11} /></button>
+              <button className="dot dot-min" aria-label="最小化" onClick={() => setIsWidgetOpen(false)}><Minus size={8} /></button>
+              <button className="dot dot-close" aria-label="关闭" onClick={() => { if (window.electronAPI) window.electronAPI.window.close(); else setIsWidgetOpen(false); }}><X size={8} /></button>
             </div>
             <div className="topbar-datetime">
               <span className="topbar-time">{today.time}</span>
@@ -286,9 +294,9 @@ function App() {
 
           {/* 标签页 */}
           <div className="tabs">
-            <button className={activeTab === 'tasks' ? 'tab active' : 'tab'} onClick={() => setActiveTab('tasks')}><ListChecks size={14} /> 待办</button>
-            <button className={activeTab === 'done' ? 'tab active tab-done' : 'tab'} onClick={() => setActiveTab('done')}><CheckCheck size={14} /> 已完成</button>
-            <button className={activeTab === 'habits' ? 'tab active' : 'tab'} onClick={() => setActiveTab('habits')}><CalendarDays size={14} /> 打卡</button>
+            <button className={activeTab === 'tasks' ? 'tab active' : 'tab'} onClick={() => setActiveTab('tasks')}><ListChecks size={11} /> 待办</button>
+            <button className={activeTab === 'done' ? 'tab active tab-done' : 'tab'} onClick={() => setActiveTab('done')}><CheckCheck size={11} /> 已完成</button>
+            <button className={activeTab === 'habits' ? 'tab active' : 'tab'} onClick={() => setActiveTab('habits')}><CalendarDays size={11} /> 打卡</button>
           </div>
 
           {/* 内容区 */}
@@ -296,7 +304,7 @@ function App() {
             <div className="content-area">
               <div className="task-list">
                 {sortedPendingTasks.length === 0 && (
-                  <div className="empty-state"><Coffee size={20} /><span>太棒了，待办全部完成啦！</span></div>
+                  <div className="empty-state"><Coffee size={15} /><span>太棒了，待办全部完成啦！</span></div>
                 )}
                 {sortedPendingTasks.map((task) => {
                   const status = getDeadlineStatus(task);
@@ -308,7 +316,7 @@ function App() {
                         <span className="task-title">{task.title}</span>
                         {task.deadline && (
                           <span className={status === 'overdue' ? 'task-deadline overdue' : status === 'near' ? 'task-deadline warning' : 'task-deadline'}>
-                            <AlertTriangle size={11} />
+                            <AlertTriangle size={8} />
                             {status === 'overdue' ? `已超时 ${formatDeadline(task.deadline)}` : `截止 ${formatDeadline(task.deadline)}`}
                           </span>
                         )}
@@ -329,9 +337,9 @@ function App() {
                       </div>
                       <div className="task-actions">
                         <button className="action-button" aria-label="设置提醒" onClick={() => openDeadlineEditor(task)}>
-                          <MoreHorizontal size={14} />
+                          <MoreHorizontal size={11} />
                         </button>
-                        <button className="delete-button" aria-label="删除" onClick={() => deleteTask(task.id)}><X size={14} /></button>
+                        <button className="delete-button" aria-label="删除" onClick={() => deleteTask(task.id)}><X size={11} /></button>
                       </div>
                     </article>
                   );
@@ -344,19 +352,19 @@ function App() {
                   onKeyDown={(e) => e.key === 'Enter' && addTask()}
                   placeholder="新增待办"
                 />
-                <button onClick={addTask} aria-label="添加"><Plus size={18} /></button>
+                <button onClick={addTask} aria-label="添加"><Plus size={14} /></button>
               </div>
             </div>
           ) : activeTab === 'done' ? (
             <div className="content-area">
               <div className="task-list">
                 {tasks.filter((t) => t.done).length === 0 && (
-                  <div className="empty-state"><CheckCheck size={20} /><span>还没有完成的任务，加油！</span></div>
+                  <div className="empty-state"><CheckCheck size={15} /><span>还没有完成的任务，加油！</span></div>
                 )}
                 {tasks.filter((t) => t.done).map((task) => (
                   <article className="task-card is-done" key={task.id}>
                     <button className="check-circle" aria-label="撤销完成" onClick={() => toggleTask(task.id)}>
-                      <Check size={13} />
+                      <Check size={10} />
                     </button>
                     <div className="task-info">
                       <span className="task-title">{task.title}</span>
@@ -366,7 +374,7 @@ function App() {
                         </span>
                       )}
                     </div>
-                    <button className="delete-button" aria-label="删除" onClick={() => deleteTask(task.id)}><X size={14} /></button>
+                    <button className="delete-button" aria-label="删除" onClick={() => deleteTask(task.id)}><X size={11} /></button>
                   </article>
                 ))}
               </div>
@@ -377,7 +385,7 @@ function App() {
                 {habits.map((habit) => (
                   <article className={habit.checked ? 'habit-card is-checked' : 'habit-card'} key={habit.id}>
                     <button className="habit-check" onClick={() => toggleHabit(habit.id)} aria-label="打卡">
-                      {habit.checked ? <Check size={13} /> : null}
+                      {habit.checked ? <Check size={10} /> : null}
                     </button>
                     <div className="habit-info">
                       <strong>{habit.title}</strong>
@@ -387,7 +395,7 @@ function App() {
                         天啦！
                       </span>
                     </div>
-                    <button className="delete-button" aria-label="删除" onClick={() => deleteHabit(habit.id)}><X size={14} /></button>
+                    <button className="delete-button" aria-label="删除" onClick={() => deleteHabit(habit.id)}><X size={11} /></button>
                   </article>
                 ))}
               </div>
@@ -398,15 +406,15 @@ function App() {
                   onKeyDown={(e) => e.key === 'Enter' && addHabit()}
                   placeholder="新增打卡习惯"
                 />
-                <button onClick={addHabit} aria-label="添加"><Plus size={18} /></button>
+                <button onClick={addHabit} aria-label="添加"><Plus size={14} /></button>
               </div>
             </div>
           )}
 
           <footer className="widget-footer">
-            <span><FileText size={13} /> 今日事今日毕</span>
+            <span><FileText size={10} /> 今日事今日毕</span>
             <button onClick={() => { setPetMood('别忘了，休息也是任务的一部分。'); setShowBubble(true); }}>
-              <RotateCcw size={13} /> 换个心情
+              <RotateCcw size={10} /> 换个心情
             </button>
           </footer>
         </section>
